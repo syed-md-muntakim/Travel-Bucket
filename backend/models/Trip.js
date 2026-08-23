@@ -25,7 +25,12 @@ const tripSchema = new mongoose.Schema(
     destinationDistrict: { type: String, required: true },
     travelDate: { type: Date, required: true },
     travelTime: { type: String, required: true }, // e.g. "14:30"
-
+    //module 2
+    destinationLocation: {
+  displayName: { type: String },
+  lat: { type: Number },
+  lng: { type: Number },
+},
     mode: { type: String, enum: ["solo", "companion"], required: true },
 
     // Only used when mode === "solo"
@@ -68,3 +73,4 @@ tripSchema.set("toJSON", { virtuals: true });
 tripSchema.set("toObject", { virtuals: true });
 
 module.exports = mongoose.model("Trip", tripSchema);
+
