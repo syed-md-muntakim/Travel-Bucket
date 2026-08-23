@@ -10,6 +10,8 @@ const tripRoutes = require("./routes/tripRoutes");
 const companionRoutes = require("./routes/companionRoutes");
 const libraryRoutes = require("./routes/libraryRoutes");
 const profileRoutes = require("./routes/profileRoutes");
+const locationRoutes = require("./routes/locationRoutes"); // Liza: Map API
+const weatherRoutes = require("./routes/weatherRoutes"); // Syed: OpenWeatherMap integration (new line)
 
 connectDB();
 
@@ -31,6 +33,9 @@ app.use("/api/trips", tripRoutes);           // Feature 1: Trip Planning & Manag
 app.use("/api/companion-trips", companionRoutes); // Feature 2: Companion Trip Joining
 app.use("/api/library", libraryRoutes);      // Feature 3: Travel Library Management
 app.use("/api/profile", profileRoutes);      // Feature 4: Profile & Travel History
+
+app.use("/api/location", locationRoutes);    // Liza: Map API
+app.use("/api/weather", weatherRoutes);      // Syed: OpenWeatherMap forecast widget (new line)
 
 app.get("/api/health", (req, res) => res.json({ status: "Travel Bucket API is running" }));
 
