@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
+import WeatherWidget from "../components/WeatherWidget"; // MEMBER 2: OpenWeatherMap widget
 
 const emptyCompanion = { name: "", phone: "", address: "", nid: "" };
 const emptyFilters = { departureDistrict: "", destinationDistrict: "", travelDate: "" };
@@ -167,6 +168,8 @@ export default function CompanionTrips() {
             </div>
           </form>
 
+          <WeatherWidget district={filters.destinationDistrict} />
+
           <div className="grid" style={{ marginTop: 16 }}>
             {available.length === 0 && <p>No open companion trips match your search.</p>}
             {available.map((t) => (
@@ -175,6 +178,7 @@ export default function CompanionTrips() {
                 <p>{new Date(t.travelDate).toLocaleDateString()} at {t.travelTime}</p>
                 <p>Organized by {t.creator?.username}</p>
                 {t.description && <p>{t.description}</p>}
+                <WeatherWidget district={t.destinationDistrict} />
                 <p><strong>Seats:</strong> {t.travellerCount} / {t.capacityMax} booked — <strong>{t.seatsRemaining}</strong> remaining</p>
 
                 {openJoinTripId !== t._id ? (
