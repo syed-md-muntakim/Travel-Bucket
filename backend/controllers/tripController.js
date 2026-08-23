@@ -1,5 +1,9 @@
 const Trip = require("../models/Trip");
 
+const { sendTripCancelledEmail } = require("../utils/emailService");
+const { sendTripCancelledSMS } = require("../utils/smsService");
+
+
 // POST /api/trips
 // Create a new trip plan. mode = "solo" or "companion".
 // Solo trips may include a list of `members` (couple/family/friend travelling along).
@@ -114,7 +118,7 @@ const updateTrip = async (req, res) => {
 
 // PATCH /api/trips/:id/cancel - cancel own trip before it starts
 const cancelTrip = async (req, res) => {
-  const trip = await Trip.findById(req.params.id);
+  const trip = await Trip.findById(req.params.id).populate("joinedUsers.user", "username email phone emailNotifications smsNotifications"); //Ayon sms api
   if (!trip) return res.status(404).json({ message: "Trip not found" });
   if (String(trip.creator) !== String(req.user._id)) {
     return res.status(403).json({ message: "Only the trip creator can cancel this trip" });
@@ -125,6 +129,21 @@ const cancelTrip = async (req, res) => {
 
   trip.status = "cancelled";
   await trip.save();
+
+  //Ayon sms api
+// Automated Email/SMS Notifications: let the creator and anyone who'd
+  // joined know the trip is off. Fire-and-forget so a slow provider never
+  // delays the response.
+  sendTripCancelledEmail(req.user, trip).catch((err) => console.error("Cancel email failed:", err.message));
+  sendTripCancelledSMS(req.user, trip).catch((err) => console.error("Cancel SMS failed:", err.message));
+  trip.joinedUsers.forEach((j) => {
+    if (j.user) {
+      sendTripCancelledEmail(j.user, trip).catch((err) => console.error("Cancel email failed:", err.message));
+      sendTripCancelledSMS(j.user, trip).catch((err) => console.error("Cancel SMS failed:", err.message));
+    }
+  });
+
+  
   res.json(trip);
 };
 
