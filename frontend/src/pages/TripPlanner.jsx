@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import api from "../api/axios";
 import LocationSearchMap from "../components/LocationSearchMap";
 import MapPreview from "../components/MapPreview";
+import WeatherWidget from "../components/WeatherWidget"; // Syed addition: OpenWeatherMap widget
+
 const emptyForm = {
   departureDistrict: "",
   destinationDistrict: "",
@@ -249,6 +251,8 @@ export default function TripPlanner() {
   onLocationSelect={handleLocationSelect}
   initialLocation={form.destinationLocation}
 />
+          {/* Syed addition: live weather preview for the destination being typed */}
+          <WeatherWidget district={form.destinationDistrict} />
 
           {/* Travel Date */}
           <label>Travel Date</label>
