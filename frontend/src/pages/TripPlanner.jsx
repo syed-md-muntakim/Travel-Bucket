@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
-
+import LocationSearchMap from "../components/LocationSearchMap";
+import MapPreview from "../components/MapPreview";
 const emptyForm = {
   departureDistrict: "",
   destinationDistrict: "",
@@ -10,6 +11,7 @@ const emptyForm = {
   description: "",
   capacityMin: 5,
   capacityMax: 10,
+  destinationLocation: null,
 };
 
 const districts = [
@@ -107,6 +109,9 @@ export default function TripPlanner() {
       [e.target.name]: e.target.value,
     });
   };
+  const handleLocationSelect = (location) => {
+  setForm((prev) => ({ ...prev, destinationLocation: location }));
+};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -240,6 +245,10 @@ export default function TripPlanner() {
               </option>
             ))}
           </select>
+            <LocationSearchMap
+  onLocationSelect={handleLocationSelect}
+  initialLocation={form.destinationLocation}
+/>
 
           {/* Travel Date */}
           <label>Travel Date</label>
@@ -358,6 +367,13 @@ export default function TripPlanner() {
 
             {/* Description */}
             {t.description && <p>{t.description}</p>}
+            {t.destinationLocation?.lat && t.destinationLocation?.lng && (
+  <MapPreview
+    lat={t.destinationLocation.lat}
+    lng={t.destinationLocation.lng}
+    label={t.destinationLocation.displayName}
+  />
+)}
 
             {/* ================= SOLO TRIP ================= */}
 
