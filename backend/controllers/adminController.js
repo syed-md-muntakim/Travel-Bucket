@@ -37,10 +37,18 @@ const getAllReviews = async (req, res) => {
 
 // DELETE /api/admin/reviews/:id - admin can remove inappropriate library entries
 const deleteReviewAsAdmin = async (req, res) => {
-  const review = await Review.findByIdAndDelete(req.params.id);
-  if (!review) return res.status(404).json({ message: "Review not found" });
-  res.json({ message: "Review removed by admin" });
+
+//Sadat: cloud Api update
+  const review = await Review.findById(req.params.id);
+  if (!review) {
+    return res.status(404).json({ message: "Review not found" });
+  }
+  const imagesToDelete = [...review.images];
+  await review.deleteOne();
+  await deleteImages(imagesToDelete);
+  res.json({ message: "Review and associated photos removed by admin" });
 };
+
 
 // GET /api/admin/stats - small overview for the top of the dashboard
 const getStats = async (req, res) => {
