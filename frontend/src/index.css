@@ -151,3 +151,55 @@ th { background: #f3f4f6; }
 @media (max-width: 700px) {
   .companion-row { grid-template-columns: 1fr 1fr; }
 }
+
+/* ---- (Liza — Map API) ---- */
+.location-search { display: flex; flex-direction: column; gap: 6px; margin: 4px 0 8px; }
+.location-searching { position: absolute; right: 10px; top: 9px; font-size: 0.8rem; color: #6b7280; }
+.location-suggestions {
+  position: absolute; z-index: 1000; left: 0; right: 0; top: 100%; margin-top: 4px;
+  background: white; border: 1px solid #d1d5db; border-radius: 6px; list-style: none;
+  padding: 0; max-height: 200px; overflow-y: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+.location-suggestions li { padding: 8px 10px; font-size: 0.88rem; cursor: pointer; border-bottom: 1px solid #f3f4f6; }
+.location-suggestions li:last-child { border-bottom: none; }
+.location-suggestions li:hover { background: #f0fdfa; }
+.location-picked { font-size: 0.85rem; color: #0f766e; margin: 4px 0 0; }
+.map-box, .map-preview {
+  width: 100%; border-radius: 8px; overflow: hidden; border: 1px solid #d1d5db;
+}
+.map-box { height: 260px; }
+.map-preview { height: 150px; margin-top: 10px; }
+
+/* ---- (Syed — OpenWeatherMap) ---- */
+.weather-widget {
+  background: #f0fdfa;
+  border: 1px solid #99f6e4;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 8px 0;
+}
+.weather-status { margin: 0; font-size: 0.85rem; color: #0f766e; }
+.weather-status.weather-error { color: #b91c1c; }
+.weather-current { display: flex; align-items: center; gap: 10px; }
+.weather-icon-lg { width: 56px; height: 56px; }
+.weather-temp { font-size: 1.4rem; font-weight: bold; color: #0f766e; line-height: 1.1; }
+.weather-desc { font-size: 0.85rem; text-transform: capitalize; color: #374151; }
+.weather-place { font-size: 0.78rem; color: #6b7280; }
+.weather-feels { font-size: 0.75rem; color: #9ca3af; }
+.weather-forecast-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed #99f6e4;
+  overflow-x: auto;
+}
+.weather-forecast-item {
+  text-align: center;
+  min-width: 56px;
+  font-size: 0.75rem;
+  color: #374151;
+}
+.weather-forecast-item img { width: 34px; height: 34px; }
+.wf-date { font-weight: 600; margin-bottom: 2px; }
+.wf-temp { color: #0f766e; }
