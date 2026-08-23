@@ -1,6 +1,9 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
+const { sendWelcomeEmail } = require("../utils/emailService"); //Ayon api
+const { sendWelcomeSMS } = require("../utils/smsService"); // Ayon api
+
 const generateToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
@@ -20,6 +23,13 @@ const registerUser = async (req, res) => {
 
     const user = await User.create({ username, email, password, phone, address });
 
+    //Ayon Api
+    // Automated Email/SMS Notifications: fire-and-forget so a slow/
+    // misconfigured provider never delays or fails registration itself.
+    sendWelcomeEmail(user).catch((err) => console.error("Welcome email failed:", err.message));
+    sendWelcomeSMS(user).catch((err) => console.error("Welcome SMS failed:", err.message));
+
+    
     return res.status(201).json({
       user,
       token: generateToken(user._id),
