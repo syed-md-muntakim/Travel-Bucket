@@ -15,6 +15,7 @@ const createTrip = async (req, res) => {
       capacityMin,
       capacityMax,
       description,
+      destinationLocation,//module2
     } = req.body;
 
     if (!departureDistrict || !destinationDistrict || !travelDate || !travelTime || !mode) {
@@ -34,6 +35,10 @@ const createTrip = async (req, res) => {
       description: description || "",
     };
 
+//module 2
+  if (destinationLocation && destinationLocation.lat && destinationLocation.lng) {
+    tripData.destinationLocation = destinationLocation;
+}
     if (mode === "solo") {
       tripData.members = Array.isArray(members) ? members : [];
     } else {
@@ -98,7 +103,7 @@ const updateTrip = async (req, res) => {
     return res.status(400).json({ message: "Only active trips can be edited" });
   }
 
-  const editable = ["departureDistrict", "destinationDistrict", "travelDate", "travelTime", "description", "members"];
+  const editable = ["departureDistrict", "destinationDistrict", "travelDate", "travelTime", "description", "members", "destinationLocation"];
   editable.forEach((field) => {
     if (req.body[field] !== undefined) trip[field] = req.body[field];
   });
