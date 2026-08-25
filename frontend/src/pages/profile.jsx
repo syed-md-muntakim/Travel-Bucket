@@ -21,16 +21,26 @@ const formatDate = (date) =>
 
 export default function Profile() {
   const { user, setUser } = useAuth();
-  const [form, setForm] = useState({ phone: "", address: "", email: "", currentPassword: "", newPassword: "" });
+  const [form, setForm] = useState({ phone: "", address: "", email: "", currentPassword: "", newPassword: "", emailNotifications: true, smsNotifications: false });
   const [history, setHistory] = useState({ created: [], joined: [], summary: {} });
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [view, setView] = useState("history"); // "history" | "edit"
   const [filter, setFilter] = useState("all"); // "all" | "active" | "completed" | "cancelled"
+  const [testStatus, setTestStatus] = useState("");
 
 
   useEffect(() => {
-    if (user) setForm((f) => ({ ...f, phone: user.phone, address: user.address, email: user.email }));
+    if (user) {
+      setForm((f) => ({
+        ...f,
+        phone: user.phone,
+        address: user.address,
+        email: user.email,
+        emailNotifications: user.emailNotifications !== false,
+        smsNotifications: user.smsNotifications === true,
+      }));
+    }
     loadHistory();
   }, [user]);
 
@@ -41,7 +51,23 @@ export default function Profile() {
   };
 
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    const { name, type, value, checked } = e.target;
+    setForm({ ...form, [name]: type === "checkbox" ? checked : value });
+  };
+
+
+  const handleSendTest = async () => {
+    setTestStatus("Sending...");
+    try {
+      const res = await api.post("/profile/notifications/test");
+      const emailNote = res.data.email?.sent ? "Email sent." : res.data.email?.reason === "opted-out" ? "Email skipped (opted out)." : "Email not sent (SMTP not configured — check server console).";
+      const smsNote = res.data.sms?.sent ? "SMS sent." : res.data.sms?.reason === "opted-out" ? "SMS skipped (not enabled)." : "SMS not sent (GreenWeb not configured — check server console).";
+      setTestStatus(`${emailNote} ${smsNote}`);
+    } catch (err) {
+      setTestStatus(err.response?.data?.message || "Failed to send test notification");
+    }
+  };
 
 
   const handleSubmit = async (e) => {
@@ -192,10 +218,40 @@ export default function Profile() {
             <input type="password" name="newPassword" value={form.newPassword} onChange={handleChange} />
 
 
+            <hr />
+            <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <input
+                type="checkbox"
+                name="emailNotifications"
+                checked={form.emailNotifications}
+                onChange={handleChange}
+              />
+              Email me about registration, companion trip joins/leaves, cancellations and important travel info
+            </label>
+
+            <label style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
+              <input
+                type="checkbox"
+                name="smsNotifications"
+                checked={form.smsNotifications}
+                onChange={handleChange}
+              />
+              Also text me the same updates via SMS (sent to the phone number above)
+            </label>
+
+
             {message && <p className="success">{message}</p>}
             {error && <p className="error">{error}</p>}
             <button type="submit">Save Changes</button>
           </form>
+
+
+          <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid #e5e7eb" }}>
+            <button type="button" className="btn-secondary" onClick={handleSendTest}>
+              Send test notification (email + SMS)
+            </button>
+            {testStatus && <p style={{ marginTop: 8, color: "#6b7280", fontSize: "0.85rem" }}>{testStatus}</p>}
+          </div>
         </div>
       )}
     </div>
