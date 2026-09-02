@@ -16,7 +16,8 @@ const searchLocation = async (req, res) => {
         addressdetails: 1,
         limit: 6,
         viewbox: "88.0,26.7,92.7,20.5",
-        bounded: 0,
+        bounded: 1, // restrict results to inside the viewbox, not just prefer it
+        countrycodes: "bd", // only Bangladesh — keeps unrelated worldwide places out of the list
       },
       headers: { "User-Agent": "TravelBucket-CSE471-Project/1.0" },
       timeout: 8000,
