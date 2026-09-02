@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import api from "../api/axios";
 import LocationSearchMap from "../components/LocationSearchMap";
 import MapPreview from "../components/MapPreview";
@@ -84,6 +85,7 @@ const districts = [
 ];
 
 export default function TripPlanner() {
+  const [searchParams] = useSearchParams();
   const [trips, setTrips] = useState([]);
   const [form, setForm] = useState(emptyForm);
   const [error, setError] = useState("");
@@ -91,6 +93,14 @@ export default function TripPlanner() {
 
   // tripId -> member information
   const [memberInputs, setMemberInputs] = useState({});
+
+  // Coming from "Plan a trip here" on the Recommendations page — prefill the destination.
+  useEffect(() => {
+    const destination = searchParams.get("destination");
+    if (destination && districts.includes(destination)) {
+      setForm((f) => ({ ...f, destinationDistrict: destination }));
+    }
+  }, [searchParams]);
 
   const loadTrips = async () => {
     try {
@@ -199,7 +209,7 @@ export default function TripPlanner() {
   };
 
   return (
-    <div>
+    <div className="trip-planner-page">
       <h1>Trip Planning & Management</h1>
 
       {/* ================= PLAN NEW TRIP ================= */}
