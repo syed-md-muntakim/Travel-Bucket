@@ -10,7 +10,13 @@ import AdminDashboard from "./pages/AdminDashboard";
 import TripPlanner from "./pages/TripPlanner";
 import CompanionTrips from "./pages/CompanionTrips";
 import TravelLibrary from "./pages/TravelLibrary";
-import Profile from "./pages/Profile";
+import Profile from "./pages/profile";
+import Recommendations from "./pages/Recommendations";
+import TravelStats from "./pages/TravelStats";
+import HotelBooking from "./pages/HotelBooking";
+import TransportBooking from "./pages/TransportBooking";
+import TripDetails from "./pages/TripDetails"; // Syed: Trip Details receipt (new line)
+import Achievements from "./pages/Achievements"; // Syed: Achievement & Activity Log (new line)
 
 export default function App() {
   return (
@@ -26,6 +32,12 @@ export default function App() {
           <Route path="/companion-trips" element={<PrivateRoute><CompanionTrips /></PrivateRoute>} />
           <Route path="/library" element={<PrivateRoute><TravelLibrary /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+          <Route path="/recommendations" element={<PrivateRoute><Recommendations /></PrivateRoute>} />
+          <Route path="/stats" element={<PrivateRoute><TravelStats /></PrivateRoute>} />
+          <Route path="/transport-booking" element={<PrivateRoute><TransportBooking /></PrivateRoute>} />
+          <Route path="/hotel-booking" element={<PrivateRoute><HotelBooking /></PrivateRoute>} />
+          <Route path="/trip-details/:tripId" element={<PrivateRoute><TripDetails /></PrivateRoute>} />
+          <Route path="/achievements" element={<PrivateRoute><Achievements /></PrivateRoute>} />
 
           <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
 

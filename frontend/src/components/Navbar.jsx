@@ -19,6 +19,10 @@ export default function Navbar() {
             <Link to="/trips">Plan a Trip</Link>
             <Link to="/companion-trips">Companion Trips</Link>
             <Link to="/library">Travel Library</Link>
+            <Link to="/recommendations">Recommended</Link>
+            <Link to="/transport-booking">Ticket Booking</Link>
+            <Link to="/hotel-booking">Hotel Booking</Link>
+            <Link to="/achievements">Achievements</Link>
             <Link to="/profile">My Profile</Link>
             {user.role === "admin" && <Link to="/admin">Admin</Link>}
             <span className="nav-user">Hi, {user.username}</span>

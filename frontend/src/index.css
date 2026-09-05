@@ -203,3 +203,267 @@ th { background: #f3f4f6; }
 .weather-forecast-item img { width: 34px; height: 34px; }
 .wf-date { font-weight: 600; margin-bottom: 2px; }
 .wf-temp { color: #0f766e; }
+
+/* ---- (Liza — Travel Recommendation System & Statistics Dashboard, Module 3) ---- */
+.rec-summary p { margin: 0; }
+.rec-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+.rec-card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+.rec-emoji { font-size: 2.2rem; line-height: 1; }
+.rec-category { background: #e0f2fe; color: #075985; text-transform: capitalize; margin-top: 4px; }
+.rec-highlight { color: #0f766e; font-weight: 600; font-size: 0.9rem; margin: 4px 0; }
+.rec-reason { color: #6b7280; font-size: 0.85rem; font-style: italic; margin-bottom: 10px; }
+
+.split-bar {
+  display: flex; width: 100%; height: 32px; border-radius: 8px; overflow: hidden;
+  background: #e5e7eb;
+}
+.split-bar-solo, .split-bar-companion {
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 0.8rem; font-weight: 600; white-space: nowrap; overflow: hidden;
+  transition: width 0.3s ease;
+}
+.split-bar-solo { background: #0f766e; }
+.split-bar-companion { background: #f59e0b; }
+
+.bar-chart { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+.bar-row { display: grid; grid-template-columns: 130px 1fr 34px; align-items: center; gap: 10px; }
+.bar-label { font-size: 0.85rem; }
+.bar-track { background: #e5e7eb; border-radius: 6px; height: 14px; overflow: hidden; }
+.bar-fill { background: #0f766e; height: 100%; border-radius: 6px; transition: width 0.3s ease; }
+.bar-value { font-size: 0.85rem; color: #6b7280; text-align: right; }
+
+.month-chart {
+  display: flex; align-items: flex-end; gap: 6px; height: 140px; margin-top: 12px;
+  overflow-x: auto; padding-bottom: 4px;
+}
+.month-bar-wrap { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; min-width: 34px; flex: 1; }
+.month-bar { width: 18px; min-height: 2px; background: #0f766e; border-radius: 4px 4px 0 0; }
+.month-bar-label { font-size: 0.65rem; color: #6b7280; margin-top: 4px; white-space: nowrap; }
+
+.insights-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+
+/* ---- (Liza — Plan a Trip page background) ---- */
+.trip-planner-page {
+  background-image: linear-gradient(rgba(12, 27, 51, 0.72), rgba(12, 27, 51, 0.82)), url("/images/companion-bg.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  border-radius: 14px;
+  padding: 28px 24px 40px;
+  margin: -4px -4px 20px;
+}
+.trip-planner-page h1,
+.trip-planner-page h2 {
+  color: white;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+/* Cards keep their normal light background so form fields stay readable */
+.trip-planner-page .card { color: #1f2937; }
+.trip-planner-page .grid .card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.trip-planner-page .grid .card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+}
+
+/* ---- (Liza — Recommendations page background) ----
+   Self-contained SVG "flight paths + pins" motif, no external image
+   dependency, tinted with the same brand teal/navy palette. */
+.recommendations-page {
+  background-image:
+    linear-gradient(160deg, rgba(6, 78, 71, 0.94), rgba(11, 32, 58, 0.94)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cg stroke='%23ffffff' stroke-opacity='0.14' stroke-width='2' fill='none'%3E%3Cpath d='M-20 60 Q 80 -20 200 80 T 260 200'/%3E%3Cpath d='M0 210 Q 100 130 220 220'/%3E%3C/g%3E%3Cg fill='%23ffffff' fill-opacity='0.18'%3E%3Ccircle cx='40' cy='60' r='4'/%3E%3Ccircle cx='170' cy='40' r='3'/%3E%3Ccircle cx='120' cy='170' r='4'/%3E%3Ccircle cx='205' cy='115' r='3'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: cover, 240px 240px;
+  border-radius: 14px;
+  padding: 28px 24px 40px;
+  margin: -4px -4px 20px;
+}
+.recommendations-page h1,
+.recommendations-page > p {
+  color: white;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+.recommendations-page .error { color: #fecaca; }
+.recommendations-page .rec-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.recommendations-page .rec-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+}
+
+/* ---- Module 3: Best Transportation + Transport Ticket Booking ---- */
+.transport-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.transport-page-header h1 { margin-bottom: 4px; }
+.selected-trip-note {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.92rem;
+}
+.best-transport-page-card {
+  border-top: 4px solid #0f766e;
+}
+.best-transport-help {
+  color: #6b7280;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+.transport-booking-card {
+  margin-top: 18px;
+}
+.transport-search-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  max-width: none;
+}
+.transport-search-form > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.transport-search-form button {
+  align-self: end;
+}
+.recommendation-result {
+  margin-top: 14px;
+  padding: 14px;
+  background: #f0fdfa;
+  border: 1px solid #99f6e4;
+  border-radius: 9px;
+}
+.recommendation-result h3 { margin: 6px 0 4px; }
+.recommendation-result p { margin: 6px 0; }
+.fare-info { color: #4b5563; font-size: 0.88rem; }
+.transport-type {
+  display: inline-block;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: #ccfbf1;
+  color: #115e59;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.transport-results {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 14px;
+}
+.transport-result-card p { margin: 6px 0; }
+.passenger-details-section {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid #e5e7eb;
+}
+.passenger-details-section h4 {
+  margin: 0 0 10px;
+  color: #0f766e;
+}
+.passenger-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.passenger-row {
+  display: grid;
+  grid-template-columns: 130px repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  align-items: center;
+  padding: 10px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+.booking-panel {
+  max-width: 680px;
+  scroll-margin-top: 20px;
+}
+.ticket-confirmation {
+  border: 1px dashed #0f766e;
+  max-width: 720px;
+}
+.ticket-confirmation p { margin: 6px 0; }
+.ticket-passengers {
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+}
+.ticket-passengers > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: #f0fdfa;
+}
+
+@media (max-width: 800px) {
+  .passenger-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 650px) {
+  .transport-search-form,
+  .passenger-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---- Member 2 (Syed): Trip Details receipt, Expense Breakdown, Achievements ---- */
+
+.trip-details-subtitle { color: #6b7280; margin-top: -6px; }
+
+.receipt-card { max-width: 640px; }
+.receipt-section {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
+}
+.receipt-section h4 { margin: 0 0 6px; color: #0f766e; }
+.receipt-section p { margin: 3px 0; }
+.receipt-skipped { color: #9ca3af; font-style: italic; }
+.receipt-actions { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+
+.expense-status { margin: 0; font-size: 0.85rem; color: #0f766e; }
+.expense-status.expense-error { color: #b91c1c; }
+.expense-breakdown h4 { margin: 0 0 6px; color: #0f766e; }
+.expense-table { width: 100%; border-collapse: collapse; }
+.expense-table td { padding: 6px 4px; border-bottom: 1px solid #e5e7eb; font-size: 0.9rem; }
+.expense-table td:last-child { text-align: right; font-weight: 600; }
+.expense-hint { font-size: 0.75rem; color: #9ca3af; font-weight: 400; }
+.expense-total-row td { border-top: 2px solid #0f766e; border-bottom: none; font-weight: 700; color: #0f766e; padding-top: 8px; }
+
+.points-card { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.points-total { font-size: 2rem; font-weight: bold; color: #0f766e; }
+.points-next { color: #4b5563; margin: 0; }
+
+.badge-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.badge-card {
+  background: white;
+  border-radius: 10px;
+  padding: 16px 10px;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.badge-card.locked { opacity: 0.5; }
+.badge-icon { font-size: 2rem; }
+.badge-name { font-weight: 600; margin-top: 6px; font-size: 0.9rem; }
+.badge-threshold { font-size: 0.78rem; color: #6b7280; margin-top: 2px; }
+
+.activity-trip-tag { color: #6b7280; font-size: 0.85rem; }
