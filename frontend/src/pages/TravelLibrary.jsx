@@ -722,11 +722,11 @@ const travelLibraryStyles = `
 }
 .tl-primary-button {
   margin-top: 24px;
-  border: 1px solid var(--tl-terracotta);
-  background: var(--tl-terracotta);
+  border: 1px solid #0f766e;
+  background: #0f766e;
   color: #fff;
 }
-.tl-primary-button:hover { background: var(--tl-terracotta-dark); transform: translateY(-1px); }
+.tl-primary-button:hover { background: #0d5c56; transform: translateY(-1px); }
 .tl-primary-button:disabled, .tl-secondary-button:disabled, .tl-danger-button:disabled { opacity: 0.62; cursor: not-allowed; transform: none; }
 .tl-secondary-button { border: 1px solid #9aaa9d; background: #fff; color: var(--tl-forest); }
 .tl-secondary-button:hover { border-color: var(--tl-forest); background: #fff; }
