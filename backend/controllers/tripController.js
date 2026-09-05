@@ -2,6 +2,7 @@ const Trip = require("../models/Trip");
 
 const { sendTripCancelledEmail } = require("../utils/emailService");
 const { sendTripCancelledSMS } = require("../utils/smsService");
+const { logActivity } = require("../services/achievementService"); // Syed: Achievement & Activity Log (new line)
 
 
 // POST /api/trips
@@ -54,6 +55,13 @@ const createTrip = async (req, res) => {
     }
 
     const trip = await Trip.create(tripData);
+
+    // Syed: Achievement & Activity Log — planning a trip earns 3 points (new lines)
+    logActivity(req.user._id, "trip_planned", {
+      trip: trip._id,
+      description: `Planned a trip: ${trip.departureDistrict} → ${trip.destinationDistrict}`,
+    }).catch((err) => console.error("Activity log failed:", err.message));
+
     res.status(201).json(trip);
   } catch (err) {
     res.status(500).json({ message: "Failed to create trip", error: err.message });
@@ -90,8 +98,8 @@ const getCompanionTrips = async (req, res) => {
 // GET /api/trips/:id
 const getTripById = async (req, res) => {
   const trip = await Trip.findById(req.params.id)
-    .populate("creator", "username email")
-    .populate("joinedUsers.user", "username email");
+    .populate("creator", "username email phone")
+    .populate("joinedUsers.user", "username email phone");
   if (!trip) return res.status(404).json({ message: "Trip not found" });
   res.json(trip);
 };
@@ -156,6 +164,13 @@ const completeTrip = async (req, res) => {
   }
   trip.status = "completed";
   await trip.save();
+
+  // Syed: Achievement & Activity Log — logged for the activity feed, 0 points (new lines)
+  logActivity(req.user._id, "trip_completed", {
+    trip: trip._id,
+    description: `Completed a trip: ${trip.departureDistrict} → ${trip.destinationDistrict}`,
+  }).catch((err) => console.error("Activity log failed:", err.message));
+
   res.json(trip);
 };
 
