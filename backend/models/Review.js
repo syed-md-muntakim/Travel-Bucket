@@ -1,5 +1,16 @@
 const mongoose = require("mongoose");
 
+const imageSchema = new mongoose.Schema({
+  url: {
+    type: String,
+    required: true,
+  },
+  publicId: {
+    type: String,
+    required: true,
+  },
+});
+
 // One travel-library memory owned by a registered user.
 // Images are stored locally under backend/uploads for Module 1.
 const reviewSchema = new mongoose.Schema(
@@ -39,7 +50,7 @@ const reviewSchema = new mongoose.Schema(
     // Local filenames. Example: 1723123456789-uuid.jpg
     // These can later be replaced by Cloudinary URLs/public IDs in Module 2.
     images: {
-      type: [String],
+      type: [imageSchema],
       default: [],
       validate: {
         validator: (images) => images.length >= 1 && images.length <= 8,

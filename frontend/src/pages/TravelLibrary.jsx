@@ -170,7 +170,7 @@ export default function TravelLibrary() {
       data.append("rating", String(form.rating));
       data.append("reviewText", reviewText);
       newFiles.forEach((file) => data.append("images", file));
-      existingImages.forEach((filename) => data.append("keepImages", filename));
+      existingImages.forEach((image) => data.append("keepImageIds", image._id));
 
       if (editing) {
         const response = await api.put(`/library/${editing._id}`, data);
@@ -332,13 +332,15 @@ export default function TravelLibrary() {
 
                 {existingImages.length + newFiles.length > 0 ? (
                   <div className="tl-photo-previews">
-                    {existingImages.map((filename) => (
+                    {existingImages.map((image) => (
                       <PhotoThumbnail
-                        key={filename}
-                        src={imageUrl(filename)}
+                        key={image._id}
+                        src={imageUrl(image)}
                         alt={editing?.destination || "Travel memory"}
                         onRemove={() => {
-                          setExistingImages((current) => current.filter((image) => image !== filename));
+                          setExistingImages((current) =>
+                            current.filter((currentImage) => currentImage._id !== image._id)
+                          );
                           setPickerError("");
                         }}
                       />
@@ -578,10 +580,17 @@ function MemoryCard({ memory, onEdit, onDelete }) {
   );
 }
 
-function imageUrl(filename) {
-  if (!filename) return "";
-  if (/^https?:\/\//i.test(filename)) return filename;
-  return `${API_ORIGIN}/uploads/${encodeURIComponent(filename)}`;
+function imageUrl(image) {
+  if (!image) return "";
+
+  // Temporary compatibility with Module 1 filename strings.
+  if (typeof image === "string") {
+    if (/^https?:\/\//i.test(image)) return image;
+    return `${API_ORIGIN}/uploads/${encodeURIComponent(image)}`;
+  }
+
+  // Module 2 Cloudinary image object.
+  return image.url || "";
 }
 
 function getApiError(error, fallback) {
@@ -713,11 +722,11 @@ const travelLibraryStyles = `
 }
 .tl-primary-button {
   margin-top: 24px;
-  border: 1px solid var(--tl-terracotta);
-  background: var(--tl-terracotta);
+  border: 1px solid #0f766e;
+  background: #0f766e;
   color: #fff;
 }
-.tl-primary-button:hover { background: var(--tl-terracotta-dark); transform: translateY(-1px); }
+.tl-primary-button:hover { background: #0d5c56; transform: translateY(-1px); }
 .tl-primary-button:disabled, .tl-secondary-button:disabled, .tl-danger-button:disabled { opacity: 0.62; cursor: not-allowed; transform: none; }
 .tl-secondary-button { border: 1px solid #9aaa9d; background: #fff; color: var(--tl-forest); }
 .tl-secondary-button:hover { border-color: var(--tl-forest); background: #fff; }

@@ -28,7 +28,7 @@ router.use(protect);
 router.get("/mine", getMyReviews);
 router.post("/", uploadImages, createReview);
 router.put("/:id", uploadImages, updateReview);
-router.delete("/:id/images/:filename", deleteImage);
+router.delete("/:id/images/:imageId", deleteImage);
 router.delete("/:id", deleteReview);
 
 module.exports = router;
