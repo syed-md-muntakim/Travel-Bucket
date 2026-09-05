@@ -3,6 +3,7 @@ const Trip = require("../models/Trip");
 const User = require("../models/User"); // Ayon api
 const { sendTripJoinedEmail, sendNewCompanionEmail, sendTripLeftEmail } = require("../utils/emailService"); // Ayon api
 const { sendTripJoinedSMS, sendNewCompanionSMS, sendTripLeftSMS } = require("../utils/smsService"); // Ayon api
+const { logActivity } = require("../services/achievementService"); // Syed: Achievement & Activity Log (new line)
 
 // GET /api/companion-trips
 // Browse companion (group/camping) trips that are still open, newest first.
@@ -88,6 +89,12 @@ const joinTrip = async (req, res) => {
 
   trip.joinedUsers.push({ user: req.user._id, companions });
   await trip.save();
+
+  // Syed: Achievement & Activity Log — logged for the activity feed, 0 points (new lines)
+  logActivity(req.user._id, "trip_joined", {
+    trip: trip._id,
+    description: `Joined a companion trip: ${trip.departureDistrict} → ${trip.destinationDistrict}`,
+  }).catch((err) => console.error("Activity log failed:", err.message));
 
   //Ayon Api
   // Automated Email/SMS Notifications: confirm the join to the traveller,
