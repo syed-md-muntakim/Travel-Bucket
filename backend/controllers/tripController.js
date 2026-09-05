@@ -1,5 +1,10 @@
 const Trip = require("../models/Trip");
 
+const { sendTripCancelledEmail } = require("../utils/emailService");
+const { sendTripCancelledSMS } = require("../utils/smsService");
+const { logActivity } = require("../services/achievementService"); // Syed: Achievement & Activity Log (new line)
+
+
 // POST /api/trips
 // Create a new trip plan. mode = "solo" or "companion".
 // Solo trips may include a list of `members` (couple/family/friend travelling along).
@@ -15,6 +20,7 @@ const createTrip = async (req, res) => {
       capacityMin,
       capacityMax,
       description,
+      destinationLocation,//module2
     } = req.body;
 
     if (!departureDistrict || !destinationDistrict || !travelDate || !travelTime || !mode) {
@@ -34,6 +40,10 @@ const createTrip = async (req, res) => {
       description: description || "",
     };
 
+//module 2
+  if (destinationLocation && destinationLocation.lat && destinationLocation.lng) {
+    tripData.destinationLocation = destinationLocation;
+}
     if (mode === "solo") {
       tripData.members = Array.isArray(members) ? members : [];
     } else {
@@ -45,6 +55,13 @@ const createTrip = async (req, res) => {
     }
 
     const trip = await Trip.create(tripData);
+
+    // Syed: Achievement & Activity Log — planning a trip earns 3 points (new lines)
+    logActivity(req.user._id, "trip_planned", {
+      trip: trip._id,
+      description: `Planned a trip: ${trip.departureDistrict} → ${trip.destinationDistrict}`,
+    }).catch((err) => console.error("Activity log failed:", err.message));
+
     res.status(201).json(trip);
   } catch (err) {
     res.status(500).json({ message: "Failed to create trip", error: err.message });
@@ -81,8 +98,8 @@ const getCompanionTrips = async (req, res) => {
 // GET /api/trips/:id
 const getTripById = async (req, res) => {
   const trip = await Trip.findById(req.params.id)
-    .populate("creator", "username email")
-    .populate("joinedUsers.user", "username email");
+    .populate("creator", "username email phone")
+    .populate("joinedUsers.user", "username email phone");
   if (!trip) return res.status(404).json({ message: "Trip not found" });
   res.json(trip);
 };
@@ -98,7 +115,7 @@ const updateTrip = async (req, res) => {
     return res.status(400).json({ message: "Only active trips can be edited" });
   }
 
-  const editable = ["departureDistrict", "destinationDistrict", "travelDate", "travelTime", "description", "members"];
+  const editable = ["departureDistrict", "destinationDistrict", "travelDate", "travelTime", "description", "members", "destinationLocation"];
   editable.forEach((field) => {
     if (req.body[field] !== undefined) trip[field] = req.body[field];
   });
@@ -109,7 +126,7 @@ const updateTrip = async (req, res) => {
 
 // PATCH /api/trips/:id/cancel - cancel own trip before it starts
 const cancelTrip = async (req, res) => {
-  const trip = await Trip.findById(req.params.id);
+  const trip = await Trip.findById(req.params.id).populate("joinedUsers.user", "username email phone emailNotifications smsNotifications"); //Ayon sms api
   if (!trip) return res.status(404).json({ message: "Trip not found" });
   if (String(trip.creator) !== String(req.user._id)) {
     return res.status(403).json({ message: "Only the trip creator can cancel this trip" });
@@ -120,6 +137,21 @@ const cancelTrip = async (req, res) => {
 
   trip.status = "cancelled";
   await trip.save();
+
+  //Ayon sms api
+// Automated Email/SMS Notifications: let the creator and anyone who'd
+  // joined know the trip is off. Fire-and-forget so a slow provider never
+  // delays the response.
+  sendTripCancelledEmail(req.user, trip).catch((err) => console.error("Cancel email failed:", err.message));
+  sendTripCancelledSMS(req.user, trip).catch((err) => console.error("Cancel SMS failed:", err.message));
+  trip.joinedUsers.forEach((j) => {
+    if (j.user) {
+      sendTripCancelledEmail(j.user, trip).catch((err) => console.error("Cancel email failed:", err.message));
+      sendTripCancelledSMS(j.user, trip).catch((err) => console.error("Cancel SMS failed:", err.message));
+    }
+  });
+
+  
   res.json(trip);
 };
 
@@ -132,6 +164,13 @@ const completeTrip = async (req, res) => {
   }
   trip.status = "completed";
   await trip.save();
+
+  // Syed: Achievement & Activity Log — logged for the activity feed, 0 points (new lines)
+  logActivity(req.user._id, "trip_completed", {
+    trip: trip._id,
+    description: `Completed a trip: ${trip.departureDistrict} → ${trip.destinationDistrict}`,
+  }).catch((err) => console.error("Activity log failed:", err.message));
+
   res.json(trip);
 };
 

@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import api from "../api/axios";
+import LocationSearchMap from "../components/LocationSearchMap";
+import MapPreview from "../components/MapPreview";
+import WeatherWidget from "../components/WeatherWidget"; // Syed addition: OpenWeatherMap widget
 
 const emptyForm = {
   departureDistrict: "",
@@ -10,13 +14,14 @@ const emptyForm = {
   description: "",
   capacityMin: 5,
   capacityMax: 10,
+  destinationLocation: null,
 };
 
 const districts = [
   "Bagerhat",
   "Bandarban",
   "Barguna",
-  "Barishal",
+  "Barisal",
   "Bhola",
   "Bogura",
   "Brahmanbaria",
@@ -80,6 +85,8 @@ const districts = [
 ];
 
 export default function TripPlanner() {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [trips, setTrips] = useState([]);
   const [form, setForm] = useState(emptyForm);
   const [error, setError] = useState("");
@@ -87,6 +94,14 @@ export default function TripPlanner() {
 
   // tripId -> member information
   const [memberInputs, setMemberInputs] = useState({});
+
+ // Coming from "Plan a trip here" on the Recommendations page — prefill the destination.
+  useEffect(() => {
+    const destination = searchParams.get("destination");
+    if (destination && districts.includes(destination)) {
+      setForm((f) => ({ ...f, destinationDistrict: destination }));
+    }
+  }, [searchParams]);
 
   const loadTrips = async () => {
     try {
@@ -107,6 +122,9 @@ export default function TripPlanner() {
       [e.target.name]: e.target.value,
     });
   };
+  const handleLocationSelect = (location) => {
+  setForm((prev) => ({ ...prev, destinationLocation: location }));
+};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -141,15 +159,12 @@ export default function TripPlanner() {
     }
   };
 
-  const completeTrip = async (id) => {
-    try {
-      await api.patch(`/trips/${id}/complete`);
-      loadTrips();
-    } catch (err) {
-      alert(
-        err.response?.data?.message || "Failed to complete trip"
-      );
-    }
+  // Syed: trip completion now happens on the Trip Details ("receipt") page,
+  // reached via Proceed -> Transport -> Hotel -> Trip Details, so the old
+  // standalone completeTrip() call was removed from this list view.
+
+  const selectTransportation = (tripId) => {
+    navigate(`/transport-booking?tripId=${encodeURIComponent(tripId)}`);
   };
 
   // Add member with ID, phone and address
@@ -192,7 +207,7 @@ export default function TripPlanner() {
   };
 
   return (
-    <div>
+    <div className="trip-planner-page">
       <h1>Trip Planning & Management</h1>
 
       {/* ================= PLAN NEW TRIP ================= */}
@@ -240,6 +255,12 @@ export default function TripPlanner() {
               </option>
             ))}
           </select>
+            <LocationSearchMap
+  onLocationSelect={handleLocationSelect}
+  initialLocation={form.destinationLocation}
+/>
+          {/* Syed addition: live weather preview for the destination being typed */}
+          <WeatherWidget district={form.destinationDistrict} />
 
           {/* Travel Date */}
           <label>Travel Date</label>
@@ -358,6 +379,13 @@ export default function TripPlanner() {
 
             {/* Description */}
             {t.description && <p>{t.description}</p>}
+            {t.destinationLocation?.lat && t.destinationLocation?.lng && (
+  <MapPreview
+    lat={t.destinationLocation.lat}
+    lng={t.destinationLocation.lng}
+    label={t.destinationLocation.displayName}
+  />
+)}
 
             {/* ================= SOLO TRIP ================= */}
 
@@ -694,6 +722,10 @@ export default function TripPlanner() {
 )}
 
             {/* ================= ACTION BUTTONS ================= */}
+            {/* Syed change: "Mark Completed" is now "Proceed" and links straight
+                into the Transport -> Hotel -> Trip Details workflow. The old
+                separate "Select Transportation" button below was removed since
+                it did exactly the same thing as this one. */}
 
             {t.status === "active" && (
               <div
@@ -704,10 +736,9 @@ export default function TripPlanner() {
                 }}
               >
                 <button
-                  className="btn-secondary"
-                  onClick={() => completeTrip(t._id)}
+                  onClick={() => selectTransportation(t._id)}
                 >
-                  Mark Completed
+                  Proceed
                 </button>
 
                 <button
@@ -718,6 +749,18 @@ export default function TripPlanner() {
                 </button>
               </div>
             )}
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                marginTop: 12,
+              }}
+            >
+              <Link to={`/trip-details/${t._id}`} className="btn-secondary" style={{ textDecoration: "none" }}>
+                View Details
+              </Link>
+            </div>
           </div>
         ))}
       </div>
