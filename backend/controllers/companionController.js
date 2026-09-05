@@ -1,5 +1,10 @@
 const Trip = require("../models/Trip");
 
+const User = require("../models/User"); // Ayon api
+const { sendTripJoinedEmail, sendNewCompanionEmail, sendTripLeftEmail } = require("../utils/emailService"); // Ayon api
+const { sendTripJoinedSMS, sendNewCompanionSMS, sendTripLeftSMS } = require("../utils/smsService"); // Ayon api
+const { logActivity } = require("../services/achievementService"); // Syed: Achievement & Activity Log (new line)
+
 // GET /api/companion-trips
 // Browse companion (group/camping) trips that are still open, newest first.
 // Optional query filters: departureDistrict, destinationDistrict, travelDate (exact day)
@@ -84,6 +89,26 @@ const joinTrip = async (req, res) => {
 
   trip.joinedUsers.push({ user: req.user._id, companions });
   await trip.save();
+
+  // Syed: Achievement & Activity Log — logged for the activity feed, 0 points (new lines)
+  logActivity(req.user._id, "trip_joined", {
+    trip: trip._id,
+    description: `Joined a companion trip: ${trip.departureDistrict} → ${trip.destinationDistrict}`,
+  }).catch((err) => console.error("Activity log failed:", err.message));
+
+  //Ayon Api
+  // Automated Email/SMS Notifications: confirm the join to the traveller,
+  // and let the trip creator know someone new is coming. Fire-and-forget
+  // so a slow provider never delays the response.
+  sendTripJoinedEmail(req.user, trip).catch((err) => console.error("Join email failed:", err.message));
+  sendTripJoinedSMS(req.user, trip).catch((err) => console.error("Join SMS failed:", err.message));
+  const creator = await User.findById(trip.creator).select("username email phone emailNotifications smsNotifications");
+  if (creator) {
+    sendNewCompanionEmail(creator, trip, req.user).catch((err) => console.error("New companion email failed:", err.message));
+    sendNewCompanionSMS(creator, trip, req.user).catch((err) => console.error("New companion SMS failed:", err.message));
+  }
+
+  
   res.json(trip);
 };
 
@@ -101,6 +126,11 @@ const leaveTrip = async (req, res) => {
   }
 
   await trip.save();
+
+   //Ayon Api
+  sendTripLeftEmail(req.user, trip).catch((err) => console.error("Leave email failed:", err.message));
+  sendTripLeftSMS(req.user, trip).catch((err) => console.error("Leave SMS failed:", err.message));
+
   res.json(trip);
 };
 
