@@ -387,7 +387,9 @@ export default function TransportBooking() {
     }
   };
 
-  const skipTransportation = () => navigate("/hotel-booking");
+  // Syed change: carry the tripId forward so Hotel Booking (and, if skipped,
+  // Trip Details) can still be linked to this trip.
+  const skipTransportation = () => navigate(tripId ? `/hotel-booking?tripId=${encodeURIComponent(tripId)}` : "/hotel-booking");
 
   const totalPrice = selectedTransport
     ? selectedTransport.price * passengerCount
@@ -436,6 +438,18 @@ export default function TransportBooking() {
               </div>
             ))}
           </div>
+
+          {/* Syed addition: keep the Plan trip -> Transport -> Hotel -> Trip Details
+              workflow moving once the ticket is confirmed */}
+          <button
+            type="button"
+            style={{ marginTop: 12 }}
+            onClick={() =>
+              navigate(tripId ? `/hotel-booking?tripId=${encodeURIComponent(tripId)}` : "/hotel-booking")
+            }
+          >
+            Continue to Hotel Booking
+          </button>
         </div>
       )}
 
