@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Review = require("../models/Review");
+const { logActivity } = require("../services/achievementService"); // Syed: Achievement & Activity Log (new line)
 
 const {
   uploadFiles,
@@ -161,6 +162,12 @@ const createReview = async (req, res) => {
       ...fields,
       images: uploadedImages,
     });
+
+    // Syed: Achievement & Activity Log — posting a review earns 2 points (new lines)
+    logActivity(req.user._id, "review_added", {
+      trip: review.trip || null,
+      description: `Posted a review for ${review.destination}`,
+    }).catch((err) => console.error("Activity log failed:", err.message));
 
     return res.status(201).json(review);
   } catch (error) {
