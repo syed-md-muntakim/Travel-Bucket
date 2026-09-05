@@ -77,7 +77,7 @@ const addReview = async (req, res) => {
 // body: { hotelId, checkIn, checkOut, rooms: [{ roomType, bedType, guests }] }
 const createBooking = async (req, res) => {
   try {
-    const { hotelId, checkIn, checkOut, rooms } = req.body;
+    const { hotelId, checkIn, checkOut, rooms, tripId } = req.body; // Syed: tripId is new
 
     if (!hotelId || !mongoose.isValidObjectId(hotelId)) {
       return res.status(400).json({ message: "Choose a valid hotel to book." });
@@ -132,9 +132,14 @@ const createBooking = async (req, res) => {
     const nights = nightsBetween(checkInDate, checkOutDate);
     const totalPrice = Math.round(nights * roomPriceTotal);
 
+    // Syed: only attach a valid trip id — silently ignore a bad/missing one
+    // rather than failing the whole booking over it.
+    const validTripId = tripId && mongoose.isValidObjectId(tripId) ? tripId : null;
+
     const booking = await HotelBooking.create({
       hotel: hotel._id,
       user: req.user._id,
+      trip: validTripId,
       rooms: validatedRooms,
       checkIn: checkInDate,
       checkOut: checkOutDate,
@@ -166,6 +171,7 @@ const getMyBookings = async (req, res) => {
   try {
     const bookings = await HotelBooking.find({ user: req.user._id })
       .populate("hotel")
+      .populate("trip", "departureDistrict destinationDistrict") // Syed: added for workflow linkage
       .sort({ checkIn: -1 });
     res.json(bookings);
   } catch (error) {
