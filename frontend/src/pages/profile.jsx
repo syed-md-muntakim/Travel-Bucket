@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 
@@ -20,6 +21,7 @@ const formatDate = (date) =>
 
 
 export default function Profile() {
+  const navigate = useNavigate();
   const { user, setUser } = useAuth();
   const [form, setForm] = useState({ phone: "", address: "", email: "", currentPassword: "", newPassword: "", emailNotifications: true, smsNotifications: false });
   const [history, setHistory] = useState({ created: [], joined: [], summary: {} });
@@ -130,9 +132,14 @@ export default function Profile() {
             </div>
           </div>
         </div>
-        <button className="btn-secondary" onClick={() => setView(view === "edit" ? "history" : "edit")}>
-          {view === "edit" ? "Back to history" : "Edit profile"}
-        </button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button className="btn-secondary" onClick={() => navigate("/stats")}>
+            My Statistics
+          </button>
+          <button className="btn-secondary" onClick={() => setView(view === "edit" ? "history" : "edit")}>
+            {view === "edit" ? "Back to history" : "Edit profile"}
+          </button>
+        </div>
       </div>
 
 
