@@ -8,6 +8,10 @@ const {
   getAllReviews,
   deleteReviewAsAdmin,
   getStats,
+  getAllHotels,
+  createHotelAsAdmin,
+  deleteHotelAsAdmin,
+  deleteHotelReviewAsAdmin,
 } = require("../controllers/adminController");
 
 // Every route below requires a logged-in admin
@@ -19,5 +23,11 @@ router.patch("/users/:id/status", setUserActive);
 router.get("/trips", getAllTrips);
 router.get("/reviews", getAllReviews);
 router.delete("/reviews/:id", deleteReviewAsAdmin);
+
+// Hotel management (Hotel Booking feature)
+router.get("/hotels", getAllHotels);
+router.post("/hotels", createHotelAsAdmin);
+router.delete("/hotels/:id", deleteHotelAsAdmin);
+router.delete("/hotels/:hotelId/reviews/:reviewId", deleteHotelReviewAsAdmin);
 
 module.exports = router;

@@ -10,6 +10,11 @@ const userSchema = new mongoose.Schema(
     address: { type: String, required: true },
     role: { type: String, enum: ["user", "admin"], default: "user" },
     isActive: { type: Boolean, default: true }, // lets admin disable an account without deleting it
+
+    //Ayon api
+    emailNotifications: { type: Boolean, default: true }, // opt-out switch for automated emails
+    smsNotifications: { type: Boolean, default: false }, // opt-in switch for automated SMS (off by default — SMS costs money to send)
+    
   },
   { timestamps: true }
 );
