@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import api from "../api/axios";
 import LocationSearchMap from "../components/LocationSearchMap";
 import MapPreview from "../components/MapPreview";
@@ -21,7 +21,7 @@ const districts = [
   "Bagerhat",
   "Bandarban",
   "Barguna",
-  "Barishal",
+  "Barisal",
   "Bhola",
   "Bogura",
   "Brahmanbaria",
@@ -86,6 +86,7 @@ const districts = [
 
 export default function TripPlanner() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [trips, setTrips] = useState([]);
   const [form, setForm] = useState(emptyForm);
   const [error, setError] = useState("");
@@ -94,7 +95,7 @@ export default function TripPlanner() {
   // tripId -> member information
   const [memberInputs, setMemberInputs] = useState({});
 
-  // Coming from "Plan a trip here" on the Recommendations page — prefill the destination.
+ // Coming from "Plan a trip here" on the Recommendations page — prefill the destination.
   useEffect(() => {
     const destination = searchParams.get("destination");
     if (destination && districts.includes(destination)) {
@@ -158,15 +159,12 @@ export default function TripPlanner() {
     }
   };
 
-  const completeTrip = async (id) => {
-    try {
-      await api.patch(`/trips/${id}/complete`);
-      loadTrips();
-    } catch (err) {
-      alert(
-        err.response?.data?.message || "Failed to complete trip"
-      );
-    }
+  // Syed: trip completion now happens on the Trip Details ("receipt") page,
+  // reached via Proceed -> Transport -> Hotel -> Trip Details, so the old
+  // standalone completeTrip() call was removed from this list view.
+
+  const selectTransportation = (tripId) => {
+    navigate(`/transport-booking?tripId=${encodeURIComponent(tripId)}`);
   };
 
   // Add member with ID, phone and address
@@ -724,6 +722,10 @@ export default function TripPlanner() {
 )}
 
             {/* ================= ACTION BUTTONS ================= */}
+            {/* Syed change: "Mark Completed" is now "Proceed" and links straight
+                into the Transport -> Hotel -> Trip Details workflow. The old
+                separate "Select Transportation" button below was removed since
+                it did exactly the same thing as this one. */}
 
             {t.status === "active" && (
               <div
@@ -734,10 +736,9 @@ export default function TripPlanner() {
                 }}
               >
                 <button
-                  className="btn-secondary"
-                  onClick={() => completeTrip(t._id)}
+                  onClick={() => selectTransportation(t._id)}
                 >
-                  Mark Completed
+                  Proceed
                 </button>
 
                 <button
@@ -748,6 +749,18 @@ export default function TripPlanner() {
                 </button>
               </div>
             )}
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                marginTop: 12,
+              }}
+            >
+              <Link to={`/trip-details/${t._id}`} className="btn-secondary" style={{ textDecoration: "none" }}>
+                View Details
+              </Link>
+            </div>
           </div>
         ))}
       </div>
