@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import api from "../api/axios";
 
 const emptyRoomDraft = { roomType: "", bedType: "", guests: 1 };
+const emptyReviewForm = { rating: 5, experience: "" };
 
 function nightsBetween(checkIn, checkOut) {
   if (!checkIn || !checkOut) return 0;
@@ -12,6 +13,10 @@ function nightsBetween(checkIn, checkOut) {
 
 export default function HotelBooking() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams(); // Syed addition
+  const tripId = searchParams.get("tripId") || ""; // Syed addition: links this booking to a trip
+
+  const [linkedTrip, setLinkedTrip] = useState(null); // Syed addition
 
   const [catalog, setCatalog] = useState([]); // hotels
   const [bookings, setBookings] = useState([]);
@@ -25,6 +30,9 @@ export default function HotelBooking() {
   const [bookingError, setBookingError] = useState("");
   const [message, setMessage] = useState("");
 
+  const [reviewForm, setReviewForm] = useState(emptyReviewForm);
+  const [reviewError, setReviewError] = useState("");
+
   const loadCatalog = async () => {
     const res = await api.get("/hotel-bookings/catalog");
     setCatalog(res.data);
@@ -36,6 +44,23 @@ export default function HotelBooking() {
   };
 
   useEffect(() => { loadCatalog(); loadBookings(); }, []);
+
+  // Syed addition: when arriving from the trip workflow (Plan trip -> Transport
+  // -> Hotel), fetch the trip and auto-select its destination district if the
+  // hotel catalog has a match, so the traveller doesn't have to re-pick it.
+  useEffect(() => {
+    if (!tripId) return;
+    api
+      .get(`/trips/${tripId}`)
+      .then((res) => setLinkedTrip(res.data))
+      .catch(() => setLinkedTrip(null));
+  }, [tripId]);
+
+  useEffect(() => {
+    if (!linkedTrip || catalog.length === 0 || selectedDistrict) return;
+    const match = catalog.find((h) => h.district === linkedTrip.destinationDistrict);
+    if (match) setSelectedDistrict(match.district);
+  }, [linkedTrip, catalog]);
 
   const selectedHotel = catalog.find((h) => h.district === selectedDistrict) || null;
   const draftRoomType = selectedHotel?.roomTypes.find((rt) => rt.name === roomDraft.roomType) || null;
@@ -49,6 +74,8 @@ export default function HotelBooking() {
   const chooseDistrict = (district) => {
     setSelectedDistrict(district);
     resetBookingState();
+    setReviewForm(emptyReviewForm);
+    setReviewError("");
   };
 
   const chooseDraftRoomType = (roomTypeName) => {
@@ -81,12 +108,15 @@ export default function HotelBooking() {
       const res = await api.post("/hotel-bookings", {
         hotelId: selectedHotel._id,
         checkIn, checkOut, rooms,
+        tripId: tripId || undefined, // Syed addition: links this booking to the trip
       });
       const totalGuests = res.data.rooms.reduce((sum, r) => sum + r.guests, 0);
       setMessage(`Booked ${selectedHotel.name} - ${rooms.length} room(s) for ${totalGuests} guest(s), ${nights} night(s)! Check your email/SMS for confirmation.`);
       setSelectedDistrict("");
       resetBookingState();
       loadBookings();
+      // Syed addition: continue the workflow to the Trip Details receipt page
+      if (tripId) navigate(`/trip-details/${tripId}`);
     } catch (err) {
       setBookingError(err.response?.data?.message || "Failed to book hotel");
     }
@@ -98,7 +128,22 @@ export default function HotelBooking() {
     loadBookings();
   };
 
-  const skipHotelBooking = () => navigate("/trips");
+  // Syed change: when this hotel step is part of the Plan trip -> Transport ->
+  // Hotel -> Trip Details workflow, skipping goes to that trip's receipt page
+  // instead of the generic trip list.
+  const skipHotelBooking = () => navigate(tripId ? `/trip-details/${tripId}` : "/trips");
+
+  const submitReview = async () => {
+    setReviewError("");
+    if (!reviewForm.experience.trim()) return setReviewError("Write about your experience.");
+    try {
+      await api.post(`/hotel-bookings/catalog/${selectedHotel._id}/reviews`, reviewForm);
+      setReviewForm(emptyReviewForm);
+      loadCatalog();
+    } catch (err) {
+      setReviewError(err.response?.data?.message || "Failed to post review");
+    }
+  };
 
   const previewNights = nightsBetween(checkIn, checkOut);
   const roomsPricePerNight = selectedHotel
@@ -116,6 +161,11 @@ export default function HotelBooking() {
         <div>
           <h1>Hotel Booking</h1>
           <p>Pick your district, add one or more rooms with the room and bed type you need, then book.</p>
+          {linkedTrip && (
+            <p className="selected-trip-note">
+              Booking for trip: {linkedTrip.departureDistrict} → {linkedTrip.destinationDistrict}
+            </p>
+          )}
         </div>
         <button type="button" className="btn-secondary" onClick={skipHotelBooking}>
           Skip hotel booking
@@ -154,6 +204,11 @@ export default function HotelBooking() {
                 </div>
               )}
               {selectedHotel.description && <p>{selectedHotel.description}</p>}
+              {selectedHotel.averageRating !== null && (
+                <p className="rating-pill" style={{ display: "inline-block" }}>
+                  ★ {selectedHotel.averageRating} ({selectedHotel.reviewCount} review{selectedHotel.reviewCount !== 1 ? "s" : ""})
+                </p>
+              )}
 
               <div className="join-form" style={{ marginTop: 12 }}>
                 <label>Check-in</label>
@@ -225,6 +280,37 @@ export default function HotelBooking() {
                   <button type="button" onClick={submitBooking}>Confirm Booking</button>
                 </div>
               </div>
+
+              <div style={{ marginTop: 16, borderTop: "1px solid #e5e7eb", paddingTop: 12 }}>
+                <strong>Reviews</strong>
+                {(!selectedHotel.reviews || selectedHotel.reviews.length === 0) && (
+                  <p style={{ color: "#6b7280" }}>No reviews yet.</p>
+                )}
+                {selectedHotel.reviews?.map((r) => (
+                  <div key={r._id} style={{ marginTop: 8 }}>
+                    <p style={{ margin: 0, fontWeight: 600 }}>⭐ {r.rating}/5 — {r.user?.username}</p>
+                    <p style={{ margin: "2px 0" }}>{r.experience}</p>
+                  </div>
+                ))}
+
+                <div className="join-form" style={{ marginTop: 12 }}>
+                  <label>Leave a Review</label>
+                  <select
+                    value={reviewForm.rating}
+                    onChange={(e) => setReviewForm({ ...reviewForm, rating: Number(e.target.value) })}
+                  >
+                    {[5, 4, 3, 2, 1].map((n) => <option key={n} value={n}>{n} star{n > 1 ? "s" : ""}</option>)}
+                  </select>
+                  <textarea
+                    rows={2}
+                    placeholder="Share your experience..."
+                    value={reviewForm.experience}
+                    onChange={(e) => setReviewForm({ ...reviewForm, experience: e.target.value })}
+                  />
+                  {reviewError && <p className="error">{reviewError}</p>}
+                  <button type="button" onClick={submitReview}>Post Review</button>
+                </div>
+              </div>
             </div>
           )}
         </>
@@ -255,3 +341,4 @@ export default function HotelBooking() {
     </div>
   );
 }
+
